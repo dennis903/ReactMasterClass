@@ -1,12 +1,16 @@
 import React, {useState, useEffect} from 'react';
+import { fetchCoinInfo, fetchTickersInfo } from '../api';
+import { useQuery } from 'react-query';
 import styled from 'styled-components';
-import { useParams, useLocation }  from 'react-router';
+import { Routes, Route, useParams, useLocation, Link, useMatch }  from 'react-router-dom';
+import Price from './Price';
+import Chart from './Chart';
 
 type RouteParams = { //interface를 쓰면 왜 안됌??
 	coinId: string;
 }
 
-type RouteLocation = {
+type RouteState = {
 	state:{
 		name:string;
 	};
@@ -33,7 +37,46 @@ const Loader = styled.span `
 	text-align: center;
 	display: block;
 `
+const Overview = styled.div`
+	display: flex;
+	justify-content: space-between;
+	background-color: rgba(0, 0, 0, 0.5);
+	padding: 10px 20px;
+	border-radius: 10px;
+`
 
+const OverviewItem = styled.div`
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	font-size: 12px;
+	span:first-child {
+		margin-bottom: 5px;
+	}
+`
+
+const Description = styled.p`
+	margin: 20px 0px;
+	padding: 10px;
+`
+
+const Tabs = styled.div `
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	margin: 25px 0px;
+	gap: 10px;
+`
+
+const Tab = styled.span<{isActive: boolean}> `
+	text-align: center;
+	text-transform: uppercase;
+	font-size: 12px;
+	font-weight: 400;
+	background-color: rgba(0, 0, 0, 0.5);
+	padding: 7px 0px;
+	border-radius: 10px;
+	color: ${props => props.isActive ? props.theme.accentColor : props.theme.textColor};
+`
 
 interface IInfoData {
 	id: string;
@@ -91,30 +134,61 @@ interface IPriceData {
 }
 
 function Coin() {
-	const [loading,setLoading] = useState(true);
+	// const [loading,setLoading] = useState(true);
 	const { coinId } = useParams<RouteParams>();
-	const { state } = useLocation() as RouteLocation;
-	const [infoData, setInfoData] = useState<IInfoData>();
-	const [priceData, setPriceData] = useState<IPriceData>();
-	useEffect(() => {
-		async function fetchCoin () {
-			const infoData = await (await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)).json();
-			const priceData = await (await fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`)).json();
-			setInfoData(infoData);
-			setPriceData(priceData);
-			setLoading(false);
-		}
-		fetchCoin();
-	},[]);
+	const { state } = useLocation() as RouteState;
+	// const [infoData, setInfoData] = useState<IInfoData>();
+	// const [priceData, setPriceData] = useState<IPriceData>();
+	const priceMatch = useMatch('/:coinId/price');
+	const chartMatch = useMatch('/:coinId/chart');
+	const {isLoading: infoLoading, data: infoData } = useQuery<IInfoData>(["infoData", coinId], () => fetchCoinInfo(coinId));
+	const {isLoading: priceLoading, data: priceData } = useQuery<IPriceData>(["priceData", coinId], () => fetchTickersInfo(coinId));
+	const loading = infoLoading || priceLoading;
+	if (infoData === undefined || priceData === undefined)
+		return null;
 	return (
 		<Container>
 			<Header>
 				<Title>
-					{state?.name || <Loader>Loading...</Loader>}
+					{state?.name ? state.name : loading ? "Loading..." : infoData?.name}
 				</Title>
 			</Header>
 			{
-				loading ? <Loader>Loading...</Loader> : priceData.quotes.USD.ath_date
+				loading ? <Loader>Loading...</Loader> : (
+					<>
+						<Overview>
+							<OverviewItem>
+								<span>Rank:</span>
+								<span>{infoData?.rank}</span>
+							</OverviewItem>
+							<OverviewItem>
+								<span>SYMBOL:</span>
+								<span>{infoData?.symbol}</span>
+							</OverviewItem>
+						</Overview>
+						<Description>
+							<span>{infoData?.description}</span>
+						</Description>
+						<Overview>
+							<OverviewItem>
+								<span>TOTAL SUPPLY: </span>
+								<span>{priceData?.total_supply}</span>
+							</OverviewItem>
+							<OverviewItem>
+								<span>Max SUPPLY:</span>
+								<span>{priceData?.max_supply}</span>
+							</OverviewItem>
+						</Overview>
+						<Tabs>
+							<Tab isActive={priceMatch !== null}><Link to="price">price</Link></Tab>
+							<Tab isActive={chartMatch !== null}><Link to="chart">chart</Link></Tab>
+						</Tabs>
+						<Routes>
+							<Route path="chart" element={<Chart />}/>
+							<Route path="price" element={<Price />}/>
+						</Routes>
+					</>
+				)
 			}
 		</Container>
 	)

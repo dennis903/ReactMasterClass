@@ -1,5 +1,6 @@
 import React from 'react';
 import Router from './routes/Router';
+import { ReactQueryDevtools } from 'react-query/devtools';
 import GlobalStyle from './GlobalStyle';
 
 function App() {
@@ -7,6 +8,7 @@ function App() {
     <>
       <GlobalStyle />
       <Router /> 
+      <ReactQueryDevtools initialIsOpen={true}/>
     </>
   );
 }
