@@ -184,7 +184,7 @@ function Coin() {
 							<Tab isActive={chartMatch !== null}><Link to="chart">chart</Link></Tab>
 						</Tabs>
 						<Routes>
-							<Route path="chart" element={<Chart />}/>
+							<Route path="chart" element={<Chart coinId={coinId}/>}/>
 							<Route path="price" element={<Price />}/>
 						</Routes>
 					</>
