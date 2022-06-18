@@ -18,25 +18,21 @@ interface IHistorical {
 	volume: string;
 }
 
-interface ISeries {
-	name: string;
-	data: IHistorical;
-}
-
 function Chart({ coinId } : IChartProps) {
-	const {isLoading, data} = useQuery<IHistorical[]>(["ohlcv", coinId], () => fetchCoinHistory(coinId));
-	const Series: ISeries[] =
-		[
+	const {isLoading, data : chartData} = useQuery<IHistorical[]>(["ohlcv", coinId], () => fetchCoinHistory(coinId));
+	const chart = {
+		'series' : [
 			{
-				name: 'Price',
-				data: data?.map(e => e.close)
+				name: 'price',
+				data: chartData?.map((price: any) => price.close) as number[]
 			}
 		]
+	}
 	return (
 		<div>
 			{isLoading ? "Loading chart..." : <ApexChart 
 				type="line"
-				series={Series}
+				series={chart.series}
 				options={{
 					theme: {
 						mode: "dark",
