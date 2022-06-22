@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import {Link} from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { fetchCoins } from '../api';
+import { isDarkTheme } from '../atom';
+import { useSetRecoilState } from 'recoil';
 
 
 const Title = styled.h1 `
@@ -65,16 +67,9 @@ interface CoinInterface {
 }
 
 function Coins() {
-	const { isLoading, data } = useQuery<CoinInterface[]>("allCoins", fetchCoins)
-	// useEffect (() => {
-	// 	async function fetchCoins () {
-	// 		const response = await fetch('https://api.coinpaprika.com/v1/coins');
-	// 		const json = await response.json();
-	// 		setCoins(json.slice(0, 20));
-	// 		setLoading(false);
-	// 	}
-	// 	fetchCoins();
-	// }, []);
+	const { isLoading, data } = useQuery<CoinInterface[]>("allCoins", fetchCoins);
+	const setDarkMode = useSetRecoilState(isDarkTheme);
+	const changeDarkMode = () => (setDarkMode((prev) => !prev));
 
 	return (
 		<Container>
@@ -82,6 +77,7 @@ function Coins() {
 				<Title>
 					코인
 				</Title>
+				<button onClick={changeDarkMode}>toggle mode</button>
 			</Header>
 			{
 				isLoading ? <Loader>Loading...</Loader> : 

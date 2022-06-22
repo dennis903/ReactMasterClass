@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import { fetchCoinInfo, fetchTickersInfo } from '../api';
 import { useQuery } from 'react-query';
 import styled from 'styled-components';
@@ -134,15 +134,18 @@ interface IPriceData {
 }
 
 function Coin() {
-	// const [loading,setLoading] = useState(true);
 	const { coinId } = useParams<RouteParams>();
 	const { state } = useLocation() as RouteState;
-	// const [infoData, setInfoData] = useState<IInfoData>();
-	// const [priceData, setPriceData] = useState<IPriceData>();
 	const priceMatch = useMatch('/:coinId/price');
 	const chartMatch = useMatch('/:coinId/chart');
 	const {isLoading: infoLoading, data: infoData } = useQuery<IInfoData>(["infoData", coinId], () => fetchCoinInfo(coinId));
-	const {isLoading: priceLoading, data: priceData } = useQuery<IPriceData>(["priceData", coinId], () => fetchTickersInfo(coinId));
+	const {isLoading: priceLoading, data: priceData } = useQuery<IPriceData>(
+		["priceData", coinId], 
+		() => fetchTickersInfo(coinId),
+		{
+			refetchInterval: 5000,
+		}
+		);
 	const loading = infoLoading || priceLoading;
 	if (infoData === undefined || priceData === undefined)
 		return null;
@@ -164,6 +167,10 @@ function Coin() {
 							<OverviewItem>
 								<span>SYMBOL:</span>
 								<span>{infoData?.symbol}</span>
+							</OverviewItem>
+							<OverviewItem>
+								<span>PRICE:</span>
+								<span>{Math.ceil(priceData?.quotes.USD.price)}</span>
 							</OverviewItem>
 						</Overview>
 						<Description>

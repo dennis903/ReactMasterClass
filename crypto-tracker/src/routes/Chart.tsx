@@ -2,6 +2,8 @@ import React from 'react'
 import {useQuery} from 'react-query';
 import { fetchCoinHistory } from '../api';
 import ApexChart from 'react-apexcharts';
+import { useRecoilValue } from 'recoil';
+import { isDarkTheme } from '../atom';
 
 interface IChartProps {
 	coinId?: string;
@@ -20,13 +22,14 @@ interface IHistorical {
 
 function Chart({ coinId } : IChartProps) {
 	const {isLoading, data : chartData} = useQuery<IHistorical[]>(["ohlcv", coinId], () => fetchCoinHistory(coinId));
+	const isDark = useRecoilValue(isDarkTheme);
 	const chart = {
 		'series' : [
 			{
 				name: 'price',
 				data: chartData?.map((price: any) => price.close) as number[]
 			}
-		]
+		],
 	}
 	return (
 		<div>
@@ -35,7 +38,7 @@ function Chart({ coinId } : IChartProps) {
 				series={chart.series}
 				options={{
 					theme: {
-						mode: "dark",
+						mode: isDark ? "dark" : "light",
 					},
 					chart: {
 						height: 300,
