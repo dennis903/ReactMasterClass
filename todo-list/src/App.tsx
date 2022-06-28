@@ -1,15 +1,12 @@
-import React from 'react';
-import { useRecoilValue } from 'recoil';
-import { isDarkTheme } from './atoms';
-import GlobalStyle from './GlobalStyle';
-import TodoList from './todoList';
+import React from "react";
+import GlobalStyle from "./GlobalStyle";
+import TodoList from "./TodoList";
 
 function App() {
-	const isDark = useRecoilValue(isDarkTheme);
   return (
     <>
-				<GlobalStyle />
-				<TodoList />
+      <GlobalStyle />
+      <TodoList />
     </>
   );
 }
